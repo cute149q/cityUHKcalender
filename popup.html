@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CityU Calendar</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main>
+      <div class="topline"><p class="eyebrow">CITYU CALENDAR</p><select id="language" aria-label="Language"><option value="en">EN</option><option value="zh-HK">中文</option></select></div>
+      <h1 data-i18n="title">Your timetable</h1>
+      <p id="status" data-i18n="loading">Reading your open AIMS page…</p>
+      <section id="schedule" hidden>
+        <div class="summary"><strong id="event-count"></strong><span data-i18n="eventReady">class events ready to export</span></div>
+        <div id="courses" aria-label="Courses found"></div>
+        <label for="reminder" data-i18n="reminder">Reminder</label>
+        <select id="reminder">
+          <option value="0" data-i18n="none">No reminder</option>
+          <option value="15" selected data-i18n="minutes15">15 minutes before</option>
+          <option value="30" data-i18n="minutes30">30 minutes before</option>
+        </select>
+        <button id="download" data-i18n="download">Download calendar file</button>
+      </section>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

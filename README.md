@@ -1,19 +1,24 @@
 # CityUHK Calendar
 
-A local Chrome/Edge extension that turns a CityUHK AIMS **Student Detail Schedule** into an iCalendar (`.ics`) file. It reads the open page in your browser and does not upload a timetable or collect AIMS credentials.
+把 CityUHK AIMS 課表一鍵匯出成日曆檔（`.ics`）的小工具。
 
-## Use it
+它可以讀取 AIMS 的 **Weekly Schedule** 或 **Student Detail Schedule**，把每節課按實際上課日期匯出；下載後可直接加到 Apple Calendar、Google Calendar、Outlook 等日曆。
 
-1. In Chrome or Edge, open `chrome://extensions` (or `edge://extensions`).
-2. Turn on **Developer mode**.
-3. Choose **Load unpacked**, then select this folder.
-4. Pin **CityUHK Calendar** in the extensions menu.
-5. Sign in to AIMS and open either **Weekly Schedule** or **Student Detail Schedule**, then click the extension icon. From Weekly Schedule, the extension retrieves the detailed schedule in the background so the current page stays unchanged.
-6. Review the detected courses, choose English or 繁體中文 and an optional reminder, then download the `.ics` file.
-7. Open the downloaded file to add the classes to your calendar.
+課表只會在你的瀏覽器內處理，不會上傳到任何伺服器，也不會讀取或儲存你的 AIMS 密碼。
 
-The extension expands every meeting into its actual weekly dates using AIMS's date range. It skips TBA meetings. Public holidays and one-off cancellation notices are not present in the AIMS schedule table, so remove those events in your calendar if necessary.
+## 怎樣用
 
-## Development
+1. 在 Chrome 或 Edge 開啟 AIMS，登入後進入 **Weekly Schedule** 或 **Student Detail Schedule**。
+2. 點擊瀏覽器右上角的 **CityUHK Calendar** 圖示。
+3. 確認偵測到的課程，選擇介面語言和要不要設定提醒。
+4. 按「下載日曆檔案」，再打開 `.ics` 檔加入你的日曆。
 
-The extension has no build step or server. After editing a file, reload it from the extensions page before testing again.
+如果你在 Weekly Schedule 頁面使用，擴充功能會在背景讀取詳細課表，原本的頁面不會跳轉。
+
+> AIMS 未必會列出公眾假期、停課或一次性的課堂變動；匯入後請按需要在日曆內調整。
+
+## English
+
+CityUHK Calendar turns your AIMS timetable into an `.ics` calendar file. Open either **Weekly Schedule** or **Student Detail Schedule** in AIMS, click the extension, and download the file to add it to Apple Calendar, Google Calendar, Outlook, or another calendar app.
+
+Your timetable is processed only in your browser. Nothing is uploaded, and the extension does not store your AIMS password.

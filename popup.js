@@ -10,8 +10,8 @@ let currentTab;
 let currentEvents = [];
 
 const copy = {
-  en: { title: "Your timetable", loading: "Reading your open AIMS page…", eventReady: "class events ready to export", reminder: "Reminder", none: "No reminder", minutes15: "15 minutes before", minutes30: "30 minutes before", download: "Download calendar file", preparing: "Preparing download…", openSchedule: "Open your AIMS Student Detail Schedule, then open this extension.", noSchedule: "No timetable was found on this page.", downloadError: "Could not create the calendar file." },
-  "zh-HK": { title: "你的課表", loading: "正在讀取目前的 AIMS 課表…", eventReady: "個課堂事件可匯出", reminder: "提醒", none: "不設提醒", minutes15: "提前 15 分鐘", minutes30: "提前 30 分鐘", download: "下載日曆檔案", preparing: "正在準備下載…", openSchedule: "請先開啟 AIMS 的 Student Detail Schedule，再打開此擴展。", noSchedule: "這個頁面找不到課表。", downloadError: "無法建立日曆檔案。" }
+  en: { title: "Your timetable", loading: "Reading your open AIMS page…", eventReady: "class events ready to export", reminder: "Reminder", none: "No reminder", minutes15: "15 minutes before", minutes30: "30 minutes before", download: "Download calendar file", preparing: "Preparing download…", openSchedule: "Open your AIMS Weekly Schedule or Student Detail Schedule, then open this extension.", noSchedule: "No timetable was found on this page.", downloadError: "Could not create the calendar file." },
+  "zh-HK": { title: "你的課表", loading: "正在讀取目前的 AIMS 課表…", eventReady: "個課堂事件可匯出", reminder: "提醒", none: "不設提醒", minutes15: "提前 15 分鐘", minutes30: "提前 30 分鐘", download: "下載日曆檔案", preparing: "正在準備下載…", openSchedule: "請先開啟 AIMS 的 Weekly Schedule 或 Student Detail Schedule，再打開此擴展。", noSchedule: "這個頁面找不到課表。", downloadError: "無法建立日曆檔案。" }
 };
 
 initialize();
@@ -38,7 +38,7 @@ async function askPage(message) {
     // Always create a fresh reader for the currently open authenticated page.
     // This avoids stale content-script contexts after an extension reload.
     await chrome.scripting.executeScript({ target: { tabId: currentTab.id }, files: ["content.js"] });
-    return await withTimeout(chrome.tabs.sendMessage(currentTab.id, message), 5000);
+    return await withTimeout(chrome.tabs.sendMessage(currentTab.id, message), 10000);
   } catch (error) {
     throw new Error(`Cannot read this AIMS page: ${error.message}`);
   }

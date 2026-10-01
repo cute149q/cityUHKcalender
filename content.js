@@ -9,20 +9,86 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
   if (message.type !== "PREVIEW_SCHEDULE" && message.type !== "EXPORT_SCHEDULE") return;
 
-  try {
-    const events = parseSchedule(document);
-    if (!events.length) {
-      throw new Error("No scheduled classes found. Open AIMS Student Detail Schedule, then try again.");
-    }
-    if (message.type === "PREVIEW_SCHEDULE") {
-      sendResponse({ ok: true, events });
+  createSchedule(message).then(sendResponse).catch((error) => {
+    sendResponse({ ok: false, error: error.message });
+  });
+  return true;
+});
+
+async function createSchedule(message) {
+  let events = parseSchedule(document);
+  if (!events.length) {
+    const detailDocument = await fetchDetailSchedule();
+    events = parseSchedule(detailDocument);
+  }
+  if (!events.length) {
+    throw new Error("No scheduled classes found. Open AIMS Weekly Schedule or Student Detail Schedule, then try again.");
+  }
+  if (message.type === "PREVIEW_SCHEDULE") {
+    return { ok: true, events };
+  }
+  return {
+    ok: true,
+    eventCount: events.length,
+    filename: `cityu-schedule-${dateStamp(new Date())}.ics`,
+    ics: makeCalendar(events, message.reminderMinutes)
+  };
+}
+
+async function fetchDetailSchedule() {
+  const control = findDetailScheduleControl(document);
+  if (control?.form) return submitDetailSchedule(control.form, control);
+
+  const url = new URL("/pls/PROD/bwskfshd.P_CrseSchdDetl", location.origin);
+  const response = await fetch(url, { credentials: "same-origin" });
+  if (!response.ok) {
+    throw new Error("AIMS did not return the detail schedule. Please refresh AIMS and try again.");
+  }
+  return new DOMParser().parseFromString(await response.text(), "text/html");
+}
+
+function findDetailScheduleControl(doc) {
+  return [...doc.querySelectorAll("input, button")].find((element) => /view detail schedule/i.test(element.value || element.textContent || ""));
+}
+
+function submitDetailSchedule(form, control) {
+  return new Promise((resolve, reject) => {
+    const frame = document.createElement("iframe");
+    const frameName = `cityuhk-calendar-detail-${Date.now()}`;
+    const originalTarget = form.getAttribute("target");
+    let settled = false;
+
+    const finish = (callback, value) => {
+      if (settled) return;
+      settled = true;
+      frame.remove();
+      if (originalTarget === null) form.removeAttribute("target");
+      else form.setAttribute("target", originalTarget);
+      callback(value);
+    };
+
+    frame.name = frameName;
+    frame.setAttribute("aria-hidden", "true");
+    Object.assign(frame.style, { display: "none", width: "0", height: "0", border: "0" });
+    frame.addEventListener("load", () => {
+      const detailDocument = frame.contentDocument;
+      if (!detailDocument || detailDocument.URL === "about:blank") return;
+      finish(resolve, detailDocument);
+    });
+    document.documentElement.append(frame);
+    form.setAttribute("target", frameName);
+
+    try {
+      if (typeof form.requestSubmit === "function") form.requestSubmit(control);
+      else control.click();
+    } catch (error) {
+      finish(reject, error);
       return;
     }
-    sendResponse({ ok: true, eventCount: events.length, filename: `cityu-schedule-${dateStamp(new Date())}.ics`, ics: makeCalendar(events, message.reminderMinutes) });
-  } catch (error) {
-    sendResponse({ ok: false, error: error.message });
-  }
-});
+
+    setTimeout(() => finish(reject, new Error("AIMS did not return the detail schedule. Please refresh AIMS and try again.")), 10000);
+  });
+}
 
 function showStatus(text) {
   const existing = document.getElementById("cityu-calendar-exporter-status");
@@ -74,7 +140,7 @@ function findCourseName(meetingTable) {
     }
     node = node.previousElementSibling;
   }
-  return "CityU class";
+  return "CityUHK class";
 }
 
 function parseTimeRange(value) {
@@ -116,7 +182,7 @@ function addDays(isoDate, count) {
 
 function makeCalendar(events, reminderMinutes = 0) {
   const now = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//CityU Calendar Exporter//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH"];
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//CityUHK Calendar//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH"];
   for (const event of events) {
     const description = [event.type, event.instructors].filter(Boolean).join("\\n");
     lines.push(

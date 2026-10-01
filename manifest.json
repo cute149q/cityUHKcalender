@@ -1,12 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "CityU Calendar Exporter",
-  "version": "0.1.0",
-  "description": "Export a CityU AIMS detail schedule to an iCalendar (.ics) file.",
+  "name": "CityUHK Calendar",
+  "version": "0.1.4",
+  "description": "Export a CityUHK AIMS detail schedule to an iCalendar (.ics) file.",
   "permissions": ["activeTab", "downloads", "scripting", "storage"],
   "host_permissions": ["https://banweb.cityu.edu.hk/*"],
   "action": {
-    "default_title": "Export CityU schedule",
+    "default_title": "Export CityUHK schedule",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",

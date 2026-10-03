@@ -5,13 +5,16 @@ const eventCount = document.querySelector("#event-count");
 const download = document.querySelector("#download");
 const reminder = document.querySelector("#reminder");
 const language = document.querySelector("#language");
+const selectAll = document.querySelector("#select-all");
 
 let currentTab;
 let currentEvents = [];
+let selectedCourses = new Set();
+let hasRenderedCourses = false;
 
 const copy = {
-  en: { title: "Your timetable", loading: "Reading your open AIMS page…", eventReady: "class events ready to export", reminder: "Reminder", none: "No reminder", minutes15: "15 minutes before", minutes30: "30 minutes before", download: "Download calendar file", preparing: "Preparing download…", openSchedule: "Open your AIMS Weekly Schedule or Student Detail Schedule, then open this extension.", noSchedule: "No timetable was found on this page.", downloadError: "Could not create the calendar file." },
-  "zh-HK": { title: "你的課表", loading: "正在讀取目前的 AIMS 課表…", eventReady: "個課堂事件可匯出", reminder: "提醒", none: "不設提醒", minutes15: "提前 15 分鐘", minutes30: "提前 30 分鐘", download: "下載日曆檔案", preparing: "正在準備下載…", openSchedule: "請先開啟 AIMS 的 Weekly Schedule 或 Student Detail Schedule，再打開此擴展。", noSchedule: "這個頁面找不到課表。", downloadError: "無法建立日曆檔案。" }
+  en: { title: "Your timetable", loading: "Reading your open AIMS page…", eventSelected: "class events selected", selectCourses: "Courses to export", selectAll: "Select all", reminder: "Reminder", none: "No reminder", minutes15: "15 minutes before", minutes30: "30 minutes before", download: "Download calendar file", preparing: "Preparing download…", openSchedule: "Open your AIMS Weekly Schedule or Student Detail Schedule, then open this extension.", noSchedule: "No timetable was found on this page.", downloadError: "Could not create the calendar file." },
+  "zh-HK": { title: "你的課表", loading: "正在讀取目前的 AIMS 課表…", eventSelected: "個已選課堂事件可匯出", selectCourses: "選擇要匯出的課程", selectAll: "全選", reminder: "提醒", none: "不設提醒", minutes15: "提前 15 分鐘", minutes30: "提前 30 分鐘", download: "下載日曆檔案", preparing: "正在準備下載…", openSchedule: "請先開啟 AIMS 的 Weekly Schedule 或 Student Detail Schedule，再打開此擴展。", noSchedule: "這個頁面找不到課表。", downloadError: "無法建立日曆檔案。" }
 };
 
 initialize();
@@ -57,20 +60,50 @@ function render(events) {
   for (const event of events) {
     grouped.set(event.course, [...(grouped.get(event.course) || []), event]);
   }
-  eventCount.textContent = events.length;
+  const availableCourses = new Set(grouped.keys());
+  if (!hasRenderedCourses) selectedCourses = availableCourses;
+  else selectedCourses = new Set([...selectedCourses].filter((course) => availableCourses.has(course)));
+  hasRenderedCourses = true;
+
   courses.replaceChildren(...[...grouped].map(([course, sessions]) => {
-    const row = document.createElement("div");
+    const row = document.createElement("label");
     row.className = "course";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.dataset.course = course;
+    checkbox.checked = selectedCourses.has(course);
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) selectedCourses.add(course);
+      else selectedCourses.delete(course);
+      updateSelectionSummary();
+    });
     const name = document.createElement("div");
     name.textContent = course;
     const count = document.createElement("span");
     count.textContent = `${sessions.length}×`;
-    row.append(name, count);
+    row.append(checkbox, name, count);
     return row;
   }));
+  updateSelectionSummary();
   status.hidden = true;
   schedule.hidden = false;
 }
+
+function updateSelectionSummary() {
+  const selectedEvents = currentEvents.filter((event) => selectedCourses.has(event.course));
+  eventCount.textContent = selectedEvents.length;
+  const courseCheckboxes = [...courses.querySelectorAll('input[type="checkbox"]')];
+  selectAll.checked = courseCheckboxes.length > 0 && courseCheckboxes.every((checkbox) => checkbox.checked);
+  selectAll.indeterminate = !selectAll.checked && courseCheckboxes.some((checkbox) => checkbox.checked);
+  download.disabled = selectedEvents.length === 0;
+}
+
+selectAll.addEventListener("change", () => {
+  const courseCheckboxes = [...courses.querySelectorAll('input[type="checkbox"]')];
+  selectedCourses = new Set(selectAll.checked ? courseCheckboxes.map((checkbox) => checkbox.dataset.course) : []);
+  for (const checkbox of courseCheckboxes) checkbox.checked = selectAll.checked;
+  updateSelectionSummary();
+});
 
 language.addEventListener("change", async () => {
   await chrome.storage.local.set({ language: language.value });
@@ -91,7 +124,7 @@ download.addEventListener("click", async () => {
   download.disabled = true;
   download.textContent = t("preparing");
   try {
-    const result = await askPage({ type: "EXPORT_SCHEDULE", reminderMinutes: Number(reminder.value) });
+    const result = await askPage({ type: "EXPORT_SCHEDULE", reminderMinutes: Number(reminder.value), selectedCourses: [...selectedCourses] });
     if (!result?.ok) throw new Error(result?.error || t("downloadError"));
     const saved = await chrome.runtime.sendMessage({ type: "DOWNLOAD_CALENDAR", ...result, tabId: currentTab.id });
     if (!saved?.ok) throw new Error(saved?.error || "Could not download the calendar file.");

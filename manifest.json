@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "CityUHK Calendar",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Export a CityUHK AIMS detail schedule to an iCalendar (.ics) file.",
   "permissions": ["activeTab", "downloads", "scripting", "storage"],
   "host_permissions": ["https://banweb.cityu.edu.hk/*"],

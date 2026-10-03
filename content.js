@@ -27,6 +27,11 @@ async function createSchedule(message) {
   if (message.type === "PREVIEW_SCHEDULE") {
     return { ok: true, events };
   }
+  if (Array.isArray(message.selectedCourses)) {
+    const selected = new Set(message.selectedCourses);
+    events = events.filter((event) => selected.has(event.course));
+  }
+  if (!events.length) throw new Error("Choose at least one course to export.");
   return {
     ok: true,
     eventCount: events.length,

@@ -10,9 +10,12 @@ h1 { margin: 0 0 8px; font-size: 25px; letter-spacing: -.04em; }
 .summary strong { color: #08775d; font-size: 25px; }
 .summary span { color: #59655f; font-size: 13px; }
 #courses { max-height: 172px; margin-bottom: 16px; overflow-y: auto; border: 1px solid #dce6df; border-radius: 10px; background: white; }
-.course { display: flex; justify-content: space-between; gap: 12px; padding: 10px; border-bottom: 1px solid #edf2ee; font-size: 12px; line-height: 1.35; }
+.course-heading { display: flex; align-items: center; justify-content: space-between; margin: 0 0 6px; color: #46534c; font-size: 12px; font-weight: 700; }
+.select-all { display: inline-flex; align-items: center; gap: 4px; margin: 0; color: #08775d; font-weight: 700; }
+.course { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 9px; padding: 10px; border-bottom: 1px solid #edf2ee; font-size: 12px; line-height: 1.35; cursor: pointer; }
 .course:last-child { border-bottom: 0; }
 .course span { color: #08775d; font-weight: 700; white-space: nowrap; }
+input[type="checkbox"] { accent-color: #08775d; }
 label { display: block; margin-bottom: 6px; color: #46534c; font-size: 12px; font-weight: 700; }
 select, button { box-sizing: border-box; width: 100%; border-radius: 8px; font: inherit; }
 select { padding: 9px 10px; border: 1px solid #c9d7ce; background: white; }
